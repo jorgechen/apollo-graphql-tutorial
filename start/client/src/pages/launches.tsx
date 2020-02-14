@@ -51,6 +51,7 @@ const Launches: React.FC<LaunchesProps> = () => {
     data,
     loading,
     error,
+    fetchMore,
   } = useQuery<
     GetLaunchListTypes.GetLaunchList,
     GetLaunchListTypes.GetLaunchListVariables>(GET_LAUNCHES)
@@ -67,6 +68,33 @@ const Launches: React.FC<LaunchesProps> = () => {
       data.launches.launches.map((launch: any) => (
         <LaunchTile key={launch.id} launch={launch} />
       ))}
+      {data.launches &&
+      data.launches.hasMore && (
+        <Button
+          onClick={() => 
+            fetchMore({
+              variables: {
+                after: data.launches.cursor,
+              },
+              updateQuery: (prev, { fetchMoreResult, ...rest }) => {
+                if (!fetchMoreResult) return prev;
+                return {
+                  ...fetchMoreResult,
+                  launches: {
+                    ...fetchMoreResult.launches,
+                    launches: [
+                      ...prev.launches.launches,
+                      ...fetchMoreResult.launches.launches,
+                    ],
+                  },
+                };
+              },
+            })
+          }
+        >
+          Load More
+        </Button>
+      )}
     </Fragment>
   )
 }
