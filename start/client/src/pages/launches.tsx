@@ -8,7 +8,6 @@ import * as GetLaunchListTypes from './__generated__/GetLaunchList'
 
 export const LAUNCH_TILE_DATA = gql`
   fragment LaunchTile on Launch {
-    __typename
     id
     isBooked
     rocket {
@@ -28,19 +27,11 @@ const GET_LAUNCHES = gql`
       cursor
       hasMore
       launches {
-        id
-        isBooked
-        rocket {
-          id
-          name
-        }
-        mission {
-          name
-          missionPatch
-        }
+        ...LaunchTile
       }
     }
   }
+  ${LAUNCH_TILE_DATA}
 `
 
 interface LaunchesProps extends RouteComponentProps {
@@ -52,8 +43,7 @@ const Launches: React.FC<LaunchesProps> = () => {
     loading,
     error,
     fetchMore,
-  } = useQuery<
-    GetLaunchListTypes.GetLaunchList,
+  } = useQuery<GetLaunchListTypes.GetLaunchList,
     GetLaunchListTypes.GetLaunchListVariables>(GET_LAUNCHES)
 
   if (loading) return <Loading />
@@ -71,13 +61,13 @@ const Launches: React.FC<LaunchesProps> = () => {
       {data.launches &&
       data.launches.hasMore && (
         <Button
-          onClick={() => 
+          onClick={() =>
             fetchMore({
               variables: {
                 after: data.launches.cursor,
               },
               updateQuery: (prev, { fetchMoreResult, ...rest }) => {
-                if (!fetchMoreResult) return prev;
+                if (!fetchMoreResult) return prev
                 return {
                   ...fetchMoreResult,
                   launches: {
@@ -87,7 +77,7 @@ const Launches: React.FC<LaunchesProps> = () => {
                       ...fetchMoreResult.launches.launches,
                     ],
                   },
-                };
+                }
               },
             })
           }
